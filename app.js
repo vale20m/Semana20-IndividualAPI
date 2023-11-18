@@ -8,6 +8,11 @@ const app = express();
 const mariadb = require("mariadb");
 const pool = mariadb.createPool({host:"localhost", user:"root", password:"1234", database:"planning", connectionLimit: 5});
 
+// Traemos el framework para agregar la autenticación
+
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = "CLAVE ULTRA SECRETA"; // Clave que utiliza el servidor para verificar que el token sea valido
+
 // Especificamos el puerto
 
 const port = 3000;
@@ -31,6 +36,45 @@ app.get("/", (req, res) => {
     res.send("<h1>Bienvenid@ al sistema!</h1>");
 
 });
+
+
+// Agregamos el codigo relacionado al login
+
+// Agregamos un metodo POST para mayor seguridad
+
+app.post("/login", (req, res) => {
+
+    // Recibimos el usuario y la contraseña del body
+
+    const {username, password} = req.body;
+
+    if (username == "admin" && password == "admin"){
+        const token = jwt.sign({username}, SECRET_KEY);
+        res.status(200).json({token});
+    } else {
+        res.status(401).json({message: "Usuario y/o contraseña incorrecto"});
+    }
+
+});
+
+// Analiza la peticion antes de ejecutarla, verificando si la peticion es valida o invalida
+
+app.use("/data", (req, res, next) => {
+
+    try {
+    
+        const decoded = jwt.verify(req.headers["access-token"], SECRET_KEY);
+        console.log(decoded);
+        next();
+
+    } catch (error) {
+    
+        res.status(401).json({message: "Usuario no autorizado"});
+    
+    }
+
+});
+
 
 // Función que muestra todos los elementos de la tabla al realizar GET
 
