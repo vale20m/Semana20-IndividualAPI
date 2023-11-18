@@ -13,6 +13,13 @@ const pool = mariadb.createPool({host:"localhost", user:"root", password:"1234",
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "CLAVE ULTRA SECRETA"; // Clave que utiliza el servidor para verificar que el token sea valido
 
+
+// Importamos los archivos mediante require
+
+const dataController = require("./controllers/dataController");
+const dataRouter = require("./routes/dataRoute");
+
+
 // Especificamos el puerto
 
 const port = 3000;
@@ -39,6 +46,9 @@ app.get("/", (req, res) => {
 
 
 // Agregamos el codigo relacionado al login
+
+// app.use("/login", )
+
 
 // Agregamos un metodo POST para mayor seguridad
 
@@ -75,158 +85,31 @@ app.use("/data", (req, res, next) => {
 
 });
 
+// Hace que segun el metodo HTTP elegido, realiza una de las funciones del archivo dataRoute.js
 
-// Función que muestra todos los elementos de la tabla al realizar GET
+app.use("/data", dataRouter);
 
-app.get("/data", async (req, res) => {
 
-    let conn;
-    try {
-  
-        conn = await pool.getConnection();
 
-        // Mostramos todas las filas de la tabla
 
-        const rows = await conn.query("SELECT * FROM todo");
-        
-        res.json(rows);
-    
-    } catch(error) {
+// Este codigo ya no es necesario
 
-        // Se muestra un posible error
+// // Función que muestra todos los elementos de la tabla al realizar GET
 
-        console.log (error);
-        res.status(500).json({message:"Se produjo un fallo en el sistema"});
+// app.get("/data", dataController.getData);
 
-    } finally {
-        if (conn) conn.release();
+// // Función que muestra el elemento cuya id es igual a la especificada en la URL
 
-    }
+// app.get("/data/:id", dataController.getDataById);
 
-});
+// // Función que agrega una fila al final de la tabla mediante POST
 
-// Función que muestra el elemento cuya id es igual a la especificada en la URL
+// app.post("/data", dataController.postData);
 
-app.get("/data/:id", async (req, res) => {
+// // Función que actualiza los datos de una fila especificada mediante PUT
 
-    let conn;
-    try {
-  
-        conn = await pool.getConnection();
+// app.put("/data/:id", dataController.putData);
 
-        // Mostramos una de las filas de la tabla (según su ID)
+// // Función para eliminar una fila especificada mediante DELETE
 
-        const rows = await conn.query("SELECT * FROM todo WHERE id=?", [req.params.id]);
-        
-        res.json(rows[0]);
-    
-    } catch(error) {
-
-        // Se muestra un posible error
-
-        console.log (error);
-        res.status(500).json({message:"Se produjo un fallo en el sistema"});
-
-    } finally {
-        if (conn) conn.release();
-
-    }
-
-});
-
-// Función que agrega una fila al final de la tabla mediante POST
-
-app.post("/data", async (req, res) => {
-
-    let conn;
-    try {
-  
-        conn = await pool.getConnection();
-
-        // Agregamos un elemento a la tabla
-
-        const element = await conn.query(`INSERT INTO todo (name, description, created_at, updated_at, status)
-        VALUES (?, ?, ?, ?, ?)`, [req.body.name, req.body.description, req.body.created_at, req.body.updated_at, req.body.status]);
-        
-        // Mostramos el elemento agregado
-
-        res.json({ id: element.insertID, ...req.body });
-    
-    } catch(error) {
-
-        // Se muestra un posible error
-
-        console.log (error);
-        res.status(500).json({message:"Se produjo un fallo en el sistema"});
-
-    } finally {
-        if (conn) conn.release();
-
-    }
-
-});
-
-// Función que actualiza los datos de una fila especificada mediante PUT
-
-app.put("/data/:id", async (req, res) => {
-
-    let conn;
-    try {
-  
-        conn = await pool.getConnection();
-
-        // Actualizamos un elemento de la tabla (según su ID)
-
-        const element = await conn.query(`UPDATE todo SET name=?, description=?, created_at=?, updated_at=?, status=?
-        WHERE id=?`, [req.body.name, req.body.description, req.body.created_at, req.body.updated_at, req.body.status, req.params.id]);
-        
-        // Mostramos el elemento actualizado
-
-        res.json({ id: element.insertID, ...req.body });
-    
-    } catch(error) {
-
-        // Se muestra un posible error
-
-        console.log (error);
-        res.status(500).json({message:"Se produjo un fallo en el sistema"});
-
-    } finally {
-        if (conn) conn.release();
-
-    }
-
-});
-
-// Función para eliminar una fila especificada mediante DELETE
-
-app.delete("/data/:id", async (req, res) => {
-
-    let conn;
-    try {
-  
-        conn = await pool.getConnection();
-
-        // Mostramos el elemento a ser quitado
-
-        const rows = await conn.query("SELECT * FROM todo WHERE id=?", [req.params.id]);
-        
-        res.json(rows[0]);
-
-        // Quitamos el elemento de la tabla
-
-        const element = await conn.query(`DELETE FROM todo WHERE id=?`, [req.params.id]);
-    
-    } catch(error) {
-
-        // Se muestra un posible error
-
-        console.log (error);
-        res.status(500).json({message:"Se produjo un fallo en el sistema"});
-
-    } finally {
-        if (conn) conn.release();
-
-    }
-
-});
+// app.delete("/data/:id", dataController.deleteData);
